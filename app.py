@@ -124,7 +124,7 @@ def predict():
     img = Image.open(io.BytesIO(file.read())).convert('RGB')
     img_w, img_h = img.size
 
-    results = model(img, conf=0.6, max_det=5)
+    results = model(img, conf=0.6, iou=0.5, max_det=3)
 
     detections = []
     for r in results:
