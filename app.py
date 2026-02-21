@@ -133,6 +133,12 @@ def predict():
             confidence = float(box.conf)
             bbox = box.xyxyn[0].tolist()  # normalized [x1,y1,x2,y2]
 
+            # Filter out detections covering more than 70% of image (likely background)
+            x1n, y1n, x2n, y2n = box.xyxyn[0].tolist()
+            box_area_ratio = (x2n - x1n) * (y2n - y1n)
+            if box_area_ratio > 0.70:
+                continue
+
             city_class_rules = CITY_RULES[city].get(cls_name, {})
             needs_followup = cls_name in FOLLOWUP_QUESTIONS and 'default' not in city_class_rules
 
