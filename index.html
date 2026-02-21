@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrashSmart — AI Waste Sorter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0e1117;
+      --surface: #161b25;
+      --surface2: #1e2535;
+      --border: #2a3347;
+      --text: #e8edf5;
+      --muted: #7a8aa0;
+      --blue: #3b82f6;
+      --blue-light: #93c5fd;
+      --green: #22c55e;
+      --green-light: #86efac;
+      --black-bin: #94a3b8;
+      --gray: #64748b;
+      --accent: #f59e0b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 24px 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .logo-icon {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, var(--green), var(--blue));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .logo-text h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+    }
+    .logo-text p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+    .badge {
+      margin-left: auto;
+      background: rgba(34,197,94,0.12);
+      color: var(--green);
+      border: 1px solid rgba(34,197,94,0.25);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      flex: 1;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 40px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* ── CITY SELECTOR ── */
+    .city-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .city-row label {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .city-btn {
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .city-btn:hover { border-color: var(--blue); color: var(--blue-light); }
+    .city-btn.active {
+      border-color: var(--blue);
+      background: rgba(59,130,246,0.12);
+      color: var(--blue-light);
+    }
+
+    /* ── UPLOAD ZONE ── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--blue);
+      background: rgba(59,130,246,0.05);
+    }
+    .upload-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .upload-icon { font-size: 48px; margin-bottom: 12px; }
+    .upload-zone h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .upload-zone p { color: var(--muted); font-size: 14px; }
+    .or-divider {
+      margin: 16px 0;
+      color: var(--muted);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .or-divider::before, .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .camera-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.18s;
+      position: relative;
+      z-index: 2;
+    }
+    .camera-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── CANVAS PREVIEW ── */
+    .canvas-wrapper {
+      display: none;
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      position: relative;
+    }
+    .canvas-wrapper.visible { display: block; }
+    #preview-canvas {
+      width: 100%;
+      display: block;
+    }
+    .analyze-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      border: none;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: opacity 0.18s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .analyze-btn:hover { opacity: 0.9; }
+    .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── LOADING ── */
+    .loading-bar {
+      display: none;
+      padding: 20px;
+      background: var(--surface);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+    .loading-bar.visible { display: block; }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-bar p { color: var(--muted); font-size: 14px; }
+    .loading-bar .wake-note {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--gray);
+    }
+
+    /* ── RESULTS ── */
+    #results { display: flex; flex-direction: column; gap: 14px; }
+
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .result-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .result-header .label {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      text-transform: capitalize;
+    }
+    .result-header .conf {
+      margin-left: auto;
+      font-size: 13px;
+      color: var(--muted);
+      background: var(--surface2);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    /* follow-up question inside card */
+    .followup-section {
+      padding: 16px 20px;
+    }
+    .followup-section p {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .followup-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .followup-opt {
+      padding: 10px 16px;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.18s;
+    }
+    .followup-opt:hover {
+      border-color: var(--blue);
+      background: rgba(59,130,246,0.08);
+      color: var(--blue-light);
+    }
+
+    /* resolved bin result */
+    .bin-result {
+      padding: 16px 20px;
+      display: none;
+    }
+    .bin-result.visible { display: block; }
+    .bin-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 10px;
+    }
+    .bin-badge.blue  { background: rgba(59,130,246,0.15);  color: var(--blue-light); }
+    .bin-badge.green { background: rgba(34,197,94,0.15);   color: var(--green-light); }
+    .bin-badge.black { background: rgba(148,163,184,0.12); color: var(--black-bin); }
+    .bin-badge.gray  { background: rgba(100,116,139,0.15); color: #94a3b8; }
+
+    .bin-tip {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 6px;
+    }
+    .city-contact {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--gray);
+      padding: 8px 12px;
+      background: var(--surface2);
+      border-radius: 6px;
+      display: none;
+    }
+    .city-contact.visible { display: block; }
+
+    /* ── LEGEND ── */
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 16px 20px;
+      background: var(--surface);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .legend-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+    }
+
+    /* ── ERROR ── */
+    .error-msg {
+      padding: 14px 18px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 10px;
+      color: #fca5a5;
+      font-size: 14px;
+      display: none;
+    }
+    .error-msg.visible { display: block; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 12px;
+      color: var(--gray);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── CAMERA VIDEO ── */
+    #camera-video {
+      width: 100%;
+      display: none;
+      border-radius: 12px;
+      background: #000;
+    }
+    #camera-video.visible { display: block; }
+    #capture-btn {
+      display: none;
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 0 0 12px 12px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    #capture-btn.visible { display: block; }
+
+    @media (max-width: 600px) {
+      header { padding: 16px; }
+      main { padding: 24px 16px; }
+      .legend { gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">♻️</div>
+  <div class="logo-text">
+    <h1>TrashSmart</h1>
+    <p>AI-powered waste sorting</p>
+  </div>
+  <span class="badge">YOLOv8 Powered</span>
+</header>
+
+<main>
+
+  <!-- City selector -->
+  <div class="city-row">
+    <label>📍 Select your city:</label>
+    <button class="city-btn" data-city="livermore" onclick="selectCity('livermore')">Livermore</button>
+    <button class="city-btn" data-city="oakland" onclick="selectCity('oakland')">Oakland</button>
+  </div>
+
+  <!-- Color legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div> Recyclable (Blue bin)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div> Organic / Compost (Green bin)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div> Trash / Garbage (Black bin)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#64748b"></div> Other — contact city</div>
+  </div>
+
+  <!-- Upload zone -->
+  <div class="upload-zone" id="upload-zone"
+       ondragover="event.preventDefault(); this.classList.add('dragover')"
+       ondragleave="this.classList.remove('dragover')"
+       ondrop="handleDrop(event)">
+    <input type="file" accept="image/*" id="file-input" onchange="handleFile(event)" />
+    <div class="upload-icon">📸</div>
+    <h2>Drop an image here</h2>
+    <p>or click to browse your photos</p>
+    <div class="or-divider">or</div>
+    <button class="camera-btn" onclick="startCamera(event)">📷 Use Camera</button>
+  </div>
+
+  <!-- Camera video -->
+  <video id="camera-video" autoplay playsinline></video>
+  <button id="capture-btn" onclick="captureFromCamera()">📸 Capture Photo</button>
+
+  <!-- Canvas preview + analyze button -->
+  <div class="canvas-wrapper" id="canvas-wrapper">
+    <canvas id="preview-canvas"></canvas>
+    <button class="analyze-btn" id="analyze-btn" onclick="analyzeImage()">
+      🔍 Analyze Waste
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-bar" id="loading-bar">
+    <div class="spinner"></div>
+    <p>Analyzing your image with YOLOv8...</p>
+    <p class="wake-note">First analysis may take up to 30 seconds while the AI wakes up.</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-msg" id="error-msg"></div>
+
+  <!-- Results -->
+  <div id="results"></div>
+
+</main>
+
+<footer>
+  TrashSmart &nbsp;·&nbsp; Powered by YOLOv8 &nbsp;·&nbsp; Built by Om &amp; Vipul
+</footer>
+
+<!-- Hidden canvas for camera capture -->
+<canvas id="capture-canvas" style="display:none"></canvas>
+
+<script>
+  // ── CONFIG ──────────────────────────────────────
+  const API_URL = 'https://trashsmart-api.onrender.com'; // ← UPDATE after Render deploy
+  // ────────────────────────────────────────────────
+
+  let selectedCity = null;
+  let currentImageBlob = null;
+  let cameraStream = null;
+  let lastDetections = [];
+
+  // Color map for bounding boxes
+  const BOX_COLORS = {
+    blue:  '#3b82f6',
+    green: '#22c55e',
+    black: '#94a3b8',
+    gray:  '#64748b',
+    // pre-resolution colors per class
+    paper:    '#f59e0b',
+    plastic:  '#f59e0b',
+    wrapper:  '#f59e0b',
+    biowaste: '#22c55e',
+    glass:    '#3b82f6',
+    metal:    '#3b82f6',
+    thermocol:'#94a3b8',
+    footware: '#64748b',
+    cloth:    '#64748b',
+  };
+
+  function selectCity(city) {
+    selectedCity = city;
+    document.querySelectorAll('.city-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.city === city);
+    });
+  }
+
+  // ── FILE HANDLING ────────────────────────────────
+  function handleFile(event) {
+    const file = event.target.files[0];
+    if (file) loadImageFile(file);
+  }
+
+  function handleDrop(event) {
+    event.preventDefault();
+    document.getElementById('upload-zone').classList.remove('dragover');
+    const file = event.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) loadImageFile(file);
+  }
+
+  function loadImageFile(file) {
+    currentImageBlob = file;
+    stopCamera();
+    const reader = new FileReader();
+    reader.onload = e => drawImageOnCanvas(e.target.result);
+    reader.readAsDataURL(file);
+  }
+
+  function drawImageOnCanvas(src) {
+    const canvas = document.getElementById('preview-canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      document.getElementById('canvas-wrapper').classList.add('visible');
+      document.getElementById('results').innerHTML = '';
+      hideError();
+      lastDetections = [];
+    };
+    img.src = src;
+  }
+
+  // ── CAMERA ──────────────────────────────────────
+  async function startCamera(event) {
+    event.stopPropagation();
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      });
+      const video = document.getElementById('camera-video');
+      video.srcObject = cameraStream;
+      video.classList.add('visible');
+      document.getElementById('capture-btn').classList.add('visible');
+      document.getElementById('canvas-wrapper').classList.remove('visible');
+    } catch (err) {
+      showError('Camera not available. Please upload an image instead.');
+    }
+  }
+
+  function captureFromCamera() {
+    const video = document.getElementById('camera-video');
+    const canvas = document.getElementById('capture-canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    canvas.toBlob(blob => {
+      currentImageBlob = blob;
+      stopCamera();
+      drawImageOnCanvas(canvas.toDataURL('image/jpeg'));
+    }, 'image/jpeg', 0.92);
+  }
+
+  function stopCamera() {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(t => t.stop());
+      cameraStream = null;
+    }
+    document.getElementById('camera-video').classList.remove('visible');
+    document.getElementById('capture-btn').classList.remove('visible');
+  }
+
+  // ── ANALYSIS ─────────────────────────────────────
+  async function analyzeImage() {
+    if (!selectedCity) {
+      showError('Please select your city first (Livermore or Oakland).');
+      return;
+    }
+    if (!currentImageBlob) {
+      showError('Please upload or capture an image first.');
+      return;
+    }
+
+    showLoading(true);
+    hideError();
+    document.getElementById('results').innerHTML = '';
+    document.getElementById('analyze-btn').disabled = true;
+
+    const formData = new FormData();
+    formData.append('image', currentImageBlob, 'photo.jpg');
+    formData.append('city', selectedCity);
+
+    try {
+      const resp = await fetch(`${API_URL}/predict`, { method: 'POST', body: formData });
+      if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
+      const data = await resp.json();
+      lastDetections = data.detections;
+      renderResults(data.detections);
+      drawBoundingBoxes(data.detections);
+    } catch (err) {
+      showError('Could not reach the analysis server. It may be waking up — please try again in 30 seconds.');
+    } finally {
+      showLoading(false);
+      document.getElementById('analyze-btn').disabled = false;
+    }
+  }
+
+  // ── DRAW BOUNDING BOXES ──────────────────────────
+  function drawBoundingBoxes(detections, resolvedMap = {}) {
+    const canvas = document.getElementById('preview-canvas');
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+
+    // Redraw original image first
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0);
+      detections.forEach(d => {
+        const resolved = resolvedMap[d.id];
+        let color;
+        if (resolved) {
+          color = BOX_COLORS[resolved.color] || '#fff';
+        } else if (!d.needs_followup && d.result) {
+          color = BOX_COLORS[d.result.color] || '#fff';
+        } else {
+          color = BOX_COLORS[d.label] || '#f59e0b';
+        }
+
+        const [x1, y1, x2, y2] = d.bbox;
+        const bx = x1 * w, by = y1 * h;
+        const bw = (x2 - x1) * w, bh = (y2 - y1) * h;
+
+        // Box
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(bx, by, bw, bh);
+
+        // Label background
+        const label = `${d.label} ${d.confidence}%`;
+        ctx.font = 'bold 14px DM Sans, sans-serif';
+        const tw = ctx.measureText(label).width;
+        ctx.fillStyle = color;
+        ctx.fillRect(bx, by - 22, tw + 12, 22);
+
+        // Label text
+        ctx.fillStyle = '#000';
+        ctx.fillText(label, bx + 6, by - 6);
+      });
+    };
+
+    // Get current canvas image as src
+    img.src = canvas.toDataURL();
+  }
+
+  // ── RENDER RESULTS ───────────────────────────────
+  const resolvedAnswers = {}; // detectionId -> result
+
+  function renderResults(detections) {
+    const container = document.getElementById('results');
+    container.innerHTML = '';
+
+    if (!detections || detections.length === 0) {
+      container.innerHTML = `
+        <div style="text-align:center; color:var(--muted); padding:24px;">
+          No waste items detected. Try a clearer photo with better lighting.
+        </div>`;
+      return;
+    }
+
+    detections.forEach(d => {
+      const card = document.createElement('div');
+      card.className = 'result-card';
+      card.id = `card-${d.id}`;
+
+      const dotColor = d.needs_followup
+        ? '#f59e0b'
+        : (d.result ? BOX_COLORS[d.result.color] : '#64748b');
+
+      card.innerHTML = `
+        <div class="result-header">
+          <div class="result-dot" style="background:${dotColor}"></div>
+          <span class="label">${d.label}</span>
+          <span class="conf">${d.confidence}% confident</span>
+        </div>
+        ${d.needs_followup ? buildFollowup(d) : buildBinResult(d.id, d.result)}
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  function buildFollowup(d) {
+    const opts = d.followup.options.map(opt => `
+      <button class="followup-opt"
+        onclick="resolveFollowup('${d.id}', '${d.label}', '${opt.id}', this)">
+        ${opt.label}
+      </button>`).join('');
+
+    return `
+      <div class="followup-section" id="followup-${d.id}">
+        <p>❓ ${d.followup.question}</p>
+        <div class="followup-options">${opts}</div>
+      </div>
+      <div class="bin-result" id="bin-${d.id}"></div>
+    `;
+  }
+
+  function buildBinResult(id, result) {
+    if (!result) return '<div class="bin-result"></div>';
+    return `
+      <div class="bin-result visible" id="bin-${id}">
+        <div class="bin-badge ${result.color}">${result.emoji} ${result.bin}</div>
+        <p class="bin-tip">${result.tip}</p>
+        ${result.bin === 'Other'
+          ? `<div class="city-contact visible">📞 ${result.city_contact}</div>`
+          : ''}
+      </div>`;
+  }
+
+  async function resolveFollowup(detectionId, yoloClass, subtype, btn) {
+    // Disable all buttons in this card
+    const card = document.getElementById(`card-${detectionId}`);
+    card.querySelectorAll('.followup-opt').forEach(b => b.disabled = true);
+    btn.style.borderColor = 'var(--blue)';
+    btn.style.color = 'var(--blue-light)';
+
+    try {
+      const resp = await fetch(`${API_URL}/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city: selectedCity, yolo_class: yoloClass, subtype })
+      });
+      const result = await resp.json();
+      resolvedAnswers[detectionId] = result;
+
+      // Show bin result
+      const binDiv = document.getElementById(`bin-${detectionId}`);
+      binDiv.innerHTML = `
+        <div class="bin-badge ${result.color}">${result.emoji} ${result.bin}</div>
+        <p class="bin-tip">${result.tip}</p>
+        ${result.bin === 'Other'
+          ? `<div class="city-contact visible">📞 ${result.city_contact}</div>`
+          : ''}
+      `;
+      binDiv.classList.add('visible');
+
+      // Update bounding box color
+      drawBoundingBoxes(lastDetections, resolvedAnswers);
+
+      // Update dot color in header
+      const dot = card.querySelector('.result-dot');
+      dot.style.background = BOX_COLORS[result.color] || '#fff';
+
+    } catch (err) {
+      showError('Could not load recommendation. Please try again.');
+    }
+  }
+
+  // ── HELPERS ─────────────────────────────────────
+  function showLoading(show) {
+    document.getElementById('loading-bar').classList.toggle('visible', show);
+  }
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg;
+    el.classList.add('visible');
+  }
+  function hideError() {
+    document.getElementById('error-msg').classList.remove('visible');
+  }
+</script>
+
+</body>
+</html>
