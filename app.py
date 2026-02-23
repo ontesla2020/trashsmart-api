@@ -1,3 +1,5 @@
+# VERSION: 2024-02-23-v2 - max_det=10 update
+from flask import Flask, request, jsonify
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from ultralytics import YOLO
