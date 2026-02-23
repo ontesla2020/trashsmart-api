@@ -9,6 +9,22 @@ CORS(app)
 
 model = YOLO('best.pt')
 
+# ═════════════════════════════════════════════════════════════════════════════
+# OPTIMIZED INFERENCE PARAMETERS (Updated for Better Performance)
+# ═════════════════════════════════════════════════════════════════════════════
+# Based on model evaluation recommendations:
+# • Confidence threshold: 0.35 (was 0.6) - better balance of detections
+# • IoU threshold: 0.6 (was 0.5) - better bounding box accuracy
+# • Image size: 1280 (was default 640) - improved detection quality
+# ═════════════════════════════════════════════════════════════════════════════
+
+INFERENCE_CONFIG = {
+    'conf': 0.35,      # Confidence threshold (adjustable: 0.3, 0.35, 0.4)
+    'iou': 0.6,        # IoU threshold for NMS (adjustable: 0.5, 0.6, 0.7)
+    'imgsz': 1280,     # Image size for inference (1280 for quality, 640 for speed)
+    'max_det': 3       # Maximum detections per image
+}
+
 # ─────────────────────────────────────────────
 # FOLLOW-UP QUESTIONS
 # Only triggered for ambiguous YOLO classes
@@ -124,7 +140,19 @@ def predict():
     img = Image.open(io.BytesIO(file.read())).convert('RGB')
     img_w, img_h = img.size
 
-    results = model(img, conf=0.6, iou=0.5, max_det=3)
+    # ═══════════════════════════════════════════════════════════════════
+    # OPTIMIZED INFERENCE - Key changes for better detection:
+    # • conf=0.35 (was 0.6): Captures more objects, reduces missed items
+    # • iou=0.6 (was 0.5): Better bounding box overlap handling
+    # • imgsz=1280: Larger image size for improved accuracy
+    # ═══════════════════════════════════════════════════════════════════
+    results = model(
+        img, 
+        conf=INFERENCE_CONFIG['conf'],      # 0.35 - Optimized confidence
+        iou=INFERENCE_CONFIG['iou'],        # 0.6 - Optimized IoU for NMS
+        imgsz=INFERENCE_CONFIG['imgsz'],    # 1280 - Larger image size
+        max_det=INFERENCE_CONFIG['max_det']  # 3 - Max detections
+    )
 
     detections = []
     for r in results:
