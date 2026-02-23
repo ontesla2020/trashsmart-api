@@ -71,6 +71,69 @@
       font-size: 12px;
       font-weight: 500;
     }
+    
+    /* ═══ OPTIMIZED MODEL BADGE (NEW) ═══ */
+    .optimized-badge {
+      background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(34,197,94,0.15));
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--blue-light);
+      cursor: help;
+      transition: all 0.2s;
+    }
+    .optimized-badge:hover {
+      background: linear-gradient(135deg, rgba(59,130,246,0.25), rgba(34,197,94,0.25));
+      transform: translateY(-1px);
+    }
+    .optimized-badge .icon {
+      font-size: 14px;
+    }
+    .optimized-badge .tooltip {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 11px;
+      line-height: 1.5;
+      width: 280px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 100;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .optimized-badge:hover .tooltip {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .tooltip-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tooltip-row:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+    .tooltip-label {
+      color: var(--muted);
+    }
+    .tooltip-value {
+      color: var(--green-light);
+      font-weight: 600;
+    }
 
     /* ── MAIN LAYOUT ── */
     main {
@@ -270,19 +333,20 @@
       margin-left: auto;
       font-size: 13px;
       color: var(--muted);
-      background: var(--surface2);
-      padding: 3px 10px;
-      border-radius: 20px;
+      font-weight: 500;
     }
 
-    /* follow-up question inside card */
+    /* ── FOLLOWUP ── */
     .followup-section {
       padding: 16px 20px;
+      background: rgba(245,158,11,0.05);
+      border-bottom: 1px solid var(--border);
     }
     .followup-section p {
-      font-size: 14px;
-      color: var(--muted);
       margin-bottom: 12px;
+      color: var(--text);
+      font-weight: 500;
+      font-size: 14px;
     }
     .followup-options {
       display: flex;
@@ -290,109 +354,90 @@
       gap: 8px;
     }
     .followup-opt {
-      padding: 10px 16px;
       background: var(--surface2);
       border: 1.5px solid var(--border);
       border-radius: 8px;
-      color: var(--text);
+      padding: 10px 14px;
       font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      cursor: pointer;
+      font-size: 13px;
+      color: var(--text);
       text-align: left;
+      cursor: pointer;
       transition: all 0.18s;
     }
     .followup-opt:hover {
       border-color: var(--blue);
       background: rgba(59,130,246,0.08);
-      color: var(--blue-light);
+    }
+    .followup-opt:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
-    /* resolved bin result */
+    /* ── BIN RESULT ── */
     .bin-result {
-      padding: 16px 20px;
       display: none;
+      padding: 16px 20px;
     }
-    .bin-result.visible { display: block; }
+    .bin-result.visible { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
     .bin-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 16px;
+      padding: 8px 16px;
       border-radius: 8px;
+      font-family: 'Syne', sans-serif;
       font-weight: 700;
       font-size: 15px;
       margin-bottom: 10px;
     }
-    .bin-badge.blue  { background: rgba(59,130,246,0.15);  color: var(--blue-light); }
-    .bin-badge.green { background: rgba(34,197,94,0.15);   color: var(--green-light); }
-    .bin-badge.black { background: rgba(148,163,184,0.12); color: var(--black-bin); }
-    .bin-badge.gray  { background: rgba(100,116,139,0.15); color: #94a3b8; }
-
+    .bin-badge.blue {
+      background: rgba(59,130,246,0.15);
+      color: var(--blue-light);
+      border: 1px solid rgba(59,130,246,0.3);
+    }
+    .bin-badge.green {
+      background: rgba(34,197,94,0.15);
+      color: var(--green-light);
+      border: 1px solid rgba(34,197,94,0.3);
+    }
+    .bin-badge.black {
+      background: rgba(148,163,184,0.15);
+      color: var(--black-bin);
+      border: 1px solid rgba(148,163,184,0.3);
+    }
+    .bin-badge.gray {
+      background: rgba(100,116,139,0.15);
+      color: var(--gray);
+      border: 1px solid rgba(100,116,139,0.3);
+    }
     .bin-tip {
-      font-size: 13px;
       color: var(--muted);
-      line-height: 1.5;
-      margin-top: 6px;
+      font-size: 13px;
+      line-height: 1.6;
     }
     .city-contact {
-      margin-top: 10px;
-      font-size: 12px;
-      color: var(--gray);
-      padding: 8px 12px;
-      background: var(--surface2);
-      border-radius: 6px;
       display: none;
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border-left: 3px solid var(--accent);
+      font-size: 12px;
+      color: var(--text);
+      border-radius: 4px;
     }
     .city-contact.visible { display: block; }
 
-    /* ── LEGEND ── */
-    .legend {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      padding: 16px 20px;
-      background: var(--surface);
-      border-radius: 12px;
-      border: 1px solid var(--border);
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-    .legend-dot {
-      width: 12px; height: 12px;
-      border-radius: 50%;
-    }
-
-    /* ── ERROR ── */
-    .error-msg {
-      padding: 14px 18px;
-      background: rgba(239,68,68,0.1);
-      border: 1px solid rgba(239,68,68,0.3);
-      border-radius: 10px;
-      color: #fca5a5;
-      font-size: 14px;
-      display: none;
-    }
-    .error-msg.visible { display: block; }
-
-    /* ── FOOTER ── */
-    footer {
-      text-align: center;
-      padding: 20px;
-      font-size: 12px;
-      color: var(--gray);
-      border-top: 1px solid var(--border);
-    }
-
-    /* ── CAMERA VIDEO ── */
+    /* ── CAMERA PREVIEW ── */
     #camera-video {
-      width: 100%;
       display: none;
-      border-radius: 12px;
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid var(--border);
       background: #000;
     }
     #camera-video.visible { display: block; }
@@ -401,141 +446,156 @@
       width: 100%;
       padding: 14px;
       background: var(--accent);
-      color: #000;
+      color: white;
       border: none;
-      border-radius: 0 0 12px 12px;
+      border-radius: 0 0 14px 14px;
       font-family: 'Syne', sans-serif;
       font-weight: 700;
       font-size: 15px;
       cursor: pointer;
+      margin-top: -1px;
     }
     #capture-btn.visible { display: block; }
+    #capture-canvas { display: none; }
 
-    @media (max-width: 600px) {
-      header { padding: 16px; }
-      main { padding: 24px 16px; }
-      .legend { gap: 10px; }
+    /* ── ERROR ── */
+    #error-msg {
+      display: none;
+      padding: 14px 18px;
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 10px;
+      color: #fca5a5;
+      font-size: 13px;
     }
+    #error-msg.visible { display: block; }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="logo-icon">♻️</div>
-  <div class="logo-text">
-    <h1>TrashSmart</h1>
-    <p>AI-powered waste sorting</p>
-  </div>
-  <span class="badge">YOLOv8 Powered</span>
-</header>
+  <header>
+    <div class="logo-icon">🗑️</div>
+    <div class="logo-text">
+      <h1>TrashSmart</h1>
+      <p>AI-powered waste sorter for your city</p>
+    </div>
+    <div class="badge">YOLOv8</div>
+    <!-- ═══ NEW: Optimized Model Indicator ═══ -->
+    <div class="optimized-badge" style="position: relative;">
+      <span class="icon">⚡</span>
+      <span>Optimized</span>
+      <div class="tooltip">
+        <strong style="display:block; margin-bottom:8px; color:var(--blue-light);">Enhanced Detection Settings</strong>
+        <div class="tooltip-row">
+          <span class="tooltip-label">Confidence:</span>
+          <span class="tooltip-value">0.35</span>
+        </div>
+        <div class="tooltip-row">
+          <span class="tooltip-label">IoU Threshold:</span>
+          <span class="tooltip-value">0.6</span>
+        </div>
+        <div class="tooltip-row">
+          <span class="tooltip-label">Image Size:</span>
+          <span class="tooltip-value">1280px</span>
+        </div>
+        <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:10px; color:var(--muted);">
+          Better accuracy & bounding boxes
+        </div>
+      </div>
+    </div>
+  </header>
 
-<main>
+  <main>
+    <!-- City Selection -->
+    <div class="city-row">
+      <label>📍 Select your city:</label>
+      <button class="city-btn" onclick="selectCity('livermore')">Livermore</button>
+      <button class="city-btn" onclick="selectCity('oakland')">Oakland</button>
+    </div>
 
-  <!-- City selector -->
-  <div class="city-row">
-    <label>📍 Select your city:</label>
-    <button class="city-btn" data-city="livermore" onclick="selectCity('livermore')">Livermore</button>
-    <button class="city-btn" data-city="oakland" onclick="selectCity('oakland')">Oakland</button>
-  </div>
+    <!-- Error Message -->
+    <div id="error-msg"></div>
 
-  <!-- Color legend -->
-  <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div> Recyclable (Blue bin)</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div> Organic / Compost (Green bin)</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div> Trash / Garbage (Black bin)</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#64748b"></div> Other — contact city</div>
-  </div>
+    <!-- Upload Zone -->
+    <div class="upload-zone" id="upload-zone"
+         ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+      <input type="file" accept="image/*" onchange="loadImageFile(this.files[0])" />
+      <div class="upload-icon">📸</div>
+      <h2>Drop your photo here</h2>
+      <p>or click to browse your files</p>
+      <div class="or-divider">or use camera</div>
+      <button class="camera-btn" onclick="startCamera(event)">
+        📷 Open Camera
+      </button>
+    </div>
 
-  <!-- Upload zone -->
-  <div class="upload-zone" id="upload-zone"
-       ondragover="event.preventDefault(); this.classList.add('dragover')"
-       ondragleave="this.classList.remove('dragover')"
-       ondrop="handleDrop(event)">
-    <input type="file" accept="image/*" id="file-input" onchange="handleFile(event)" />
-    <div class="upload-icon">📸</div>
-    <h2>Drop an image here</h2>
-    <p>or click to browse your photos</p>
-    <div class="or-divider">or</div>
-    <button class="camera-btn" onclick="startCamera(event)">📷 Use Camera</button>
-  </div>
+    <!-- Camera Preview -->
+    <video id="camera-video" autoplay playsinline></video>
+    <button id="capture-btn" onclick="captureFromCamera()">📸 Capture Photo</button>
+    <canvas id="capture-canvas"></canvas>
 
-  <!-- Camera video -->
-  <video id="camera-video" autoplay playsinline></video>
-  <button id="capture-btn" onclick="captureFromCamera()">📸 Capture Photo</button>
+    <!-- Canvas Preview + Analyze -->
+    <div class="canvas-wrapper" id="canvas-wrapper">
+      <canvas id="preview-canvas"></canvas>
+      <button class="analyze-btn" id="analyze-btn" onclick="analyzeImage()">
+        <span>🔍</span>
+        <span>Analyze Waste</span>
+      </button>
+    </div>
 
-  <!-- Canvas preview + analyze button -->
-  <div class="canvas-wrapper" id="canvas-wrapper">
-    <canvas id="preview-canvas"></canvas>
-    <button class="analyze-btn" id="analyze-btn" onclick="analyzeImage()">
-      🔍 Analyze Waste
-    </button>
-  </div>
+    <!-- Loading -->
+    <div class="loading-bar" id="loading-bar">
+      <div class="spinner"></div>
+      <p>Analyzing image with optimized detection...</p>
+      <p class="wake-note">First load may take 30s as server wakes up</p>
+    </div>
 
-  <!-- Loading -->
-  <div class="loading-bar" id="loading-bar">
-    <div class="spinner"></div>
-    <p>Analyzing your image with YOLOv8...</p>
-    <p class="wake-note">First analysis may take up to 30 seconds while the AI wakes up.</p>
-  </div>
-
-  <!-- Error -->
-  <div class="error-msg" id="error-msg"></div>
-
-  <!-- Results -->
-  <div id="results"></div>
-
-</main>
-
-<footer>
-  TrashSmart &nbsp;·&nbsp; Powered by YOLOv8 &nbsp;·&nbsp; Built by Om &amp; Vipul
-</footer>
-
-<!-- Hidden canvas for camera capture -->
-<canvas id="capture-canvas" style="display:none"></canvas>
+    <!-- Results -->
+    <div id="results"></div>
+  </main>
 
 <script>
-  // ── CONFIG ──────────────────────────────────────
-  const API_URL = 'https://ontesla2020-trashsmart.hf.space';
-  // ────────────────────────────────────────────────
-
+  // ── CONFIGURATION ───────────────────────────────────
+  const API_URL = window.location.origin;
   let selectedCity = null;
   let currentImageBlob = null;
   let cameraStream = null;
   let lastDetections = [];
 
-  // Color map for bounding boxes
   const BOX_COLORS = {
-    blue:  '#3b82f6',
+    blue: '#3b82f6',
     green: '#22c55e',
     black: '#94a3b8',
-    gray:  '#64748b',
-    // pre-resolution colors per class
-    paper:    '#f59e0b',
-    plastic:  '#f59e0b',
-    wrapper:  '#f59e0b',
-    biowaste: '#22c55e',
-    glass:    '#3b82f6',
-    metal:    '#3b82f6',
-    thermocol:'#94a3b8',
-    footware: '#64748b',
-    cloth:    '#64748b',
+    gray: '#64748b',
+    paper: '#f59e0b',
+    plastic: '#3b82f6',
+    wrapper: '#f59e0b'
   };
 
+  // ── CITY SELECTION ──────────────────────────────────
   function selectCity(city) {
     selectedCity = city;
-    document.querySelectorAll('.city-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.city === city);
-    });
+    document.querySelectorAll('.city-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    hideError();
   }
 
-  // ── FILE HANDLING ────────────────────────────────
-  function handleFile(event) {
-    const file = event.target.files[0];
-    if (file) loadImageFile(file);
+  // ── IMAGE UPLOAD & DROP ─────────────────────────────
+  function handleDragOver(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    document.getElementById('upload-zone').classList.add('dragover');
+  }
+
+  function handleDragLeave(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    document.getElementById('upload-zone').classList.remove('dragover');
   }
 
   function handleDrop(event) {
     event.preventDefault();
+    event.stopPropagation();
     document.getElementById('upload-zone').classList.remove('dragover');
     const file = event.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) loadImageFile(file);
