@@ -22,7 +22,7 @@ INFERENCE_CONFIG = {
     'conf': 0.35,      # Confidence threshold (adjustable: 0.3, 0.35, 0.4)
     'iou': 0.6,        # IoU threshold for NMS (adjustable: 0.5, 0.6, 0.7)
     'imgsz': 1280,     # Image size for inference (1280 for quality, 640 for speed)
-    'max_det': 3       # Maximum detections per image
+    'max_det': 6       # Maximum detections per image
 }
 
 # ─────────────────────────────────────────────
