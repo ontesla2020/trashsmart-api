@@ -1,868 +1,607 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TrashSmart — AI Waste Sorter</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #0e1117;
-      --surface: #161b25;
-      --surface2: #1e2535;
-      --border: #2a3347;
-      --text: #e8edf5;
-      --muted: #7a8aa0;
-      --blue: #3b82f6;
-      --blue-light: #93c5fd;
-      --green: #22c55e;
-      --green-light: #86efac;
-      --black-bin: #94a3b8;
-      --gray: #64748b;
-      --accent: #f59e0b;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ── HEADER ── */
-    header {
-      padding: 24px 32px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-    }
-    .logo-icon {
-      width: 42px; height: 42px;
-      background: linear-gradient(135deg, var(--green), var(--blue));
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-    }
-    .logo-text h1 {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: 22px;
-      letter-spacing: -0.5px;
-    }
-    .logo-text p {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 1px;
-    }
-    .badge {
-      margin-left: auto;
-      background: rgba(34,197,94,0.12);
-      color: var(--green);
-      border: 1px solid rgba(34,197,94,0.25);
-      border-radius: 20px;
-      padding: 4px 12px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-    
-    /* ═══ OPTIMIZED MODEL BADGE (NEW) ═══ */
-    .optimized-badge {
-      background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(34,197,94,0.15));
-      border: 1px solid rgba(59,130,246,0.3);
-      border-radius: 8px;
-      padding: 8px 14px;
-      font-size: 11px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--blue-light);
-      cursor: help;
-      transition: all 0.2s;
-    }
-    .optimized-badge:hover {
-      background: linear-gradient(135deg, rgba(59,130,246,0.25), rgba(34,197,94,0.25));
-      transform: translateY(-1px);
-    }
-    .optimized-badge .icon {
-      font-size: 14px;
-    }
-    .optimized-badge .tooltip {
-      position: absolute;
-      top: 100%;
-      right: 0;
-      margin-top: 8px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px;
-      font-size: 11px;
-      line-height: 1.5;
-      width: 280px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s;
-      z-index: 100;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-    }
-    .optimized-badge:hover .tooltip {
-      opacity: 1;
-      pointer-events: all;
-    }
-    .tooltip-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 6px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid var(--border);
-    }
-    .tooltip-row:last-child {
-      margin-bottom: 0;
-      padding-bottom: 0;
-      border-bottom: none;
-    }
-    .tooltip-label {
-      color: var(--muted);
-    }
-    .tooltip-value {
-      color: var(--green-light);
-      font-weight: 600;
-    }
-
-    /* ── MAIN LAYOUT ── */
-    main {
-      flex: 1;
-      max-width: 900px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 40px 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 28px;
-    }
-
-    /* ── CITY SELECTOR ── */
-    .city-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .city-row label {
-      font-size: 14px;
-      color: var(--muted);
-      font-weight: 500;
-    }
-    .city-btn {
-      padding: 8px 20px;
-      border-radius: 8px;
-      border: 1.5px solid var(--border);
-      background: var(--surface);
-      color: var(--muted);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.18s;
-    }
-    .city-btn:hover { border-color: var(--blue); color: var(--blue-light); }
-    .city-btn.active {
-      border-color: var(--blue);
-      background: rgba(59,130,246,0.12);
-      color: var(--blue-light);
-    }
-
-    /* ── UPLOAD ZONE ── */
-    .upload-zone {
-      border: 2px dashed var(--border);
-      border-radius: 16px;
-      background: var(--surface);
-      padding: 48px 24px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
-    }
-    .upload-zone:hover, .upload-zone.dragover {
-      border-color: var(--blue);
-      background: rgba(59,130,246,0.05);
-    }
-    .upload-zone input[type="file"] {
-      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-    }
-    .upload-icon { font-size: 48px; margin-bottom: 12px; }
-    .upload-zone h2 {
-      font-family: 'Syne', sans-serif;
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    .upload-zone p { color: var(--muted); font-size: 14px; }
-    .or-divider {
-      margin: 16px 0;
-      color: var(--muted);
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .or-divider::before, .or-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-    .camera-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 22px;
-      border-radius: 8px;
-      border: 1.5px solid var(--border);
-      background: transparent;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.18s;
-      position: relative;
-      z-index: 2;
-    }
-    .camera-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-    /* ── CANVAS PREVIEW ── */
-    .canvas-wrapper {
-      display: none;
-      border-radius: 16px;
-      overflow: hidden;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      position: relative;
-    }
-    .canvas-wrapper.visible { display: block; }
-    #preview-canvas {
-      width: 100%;
-      display: block;
-    }
-    .analyze-btn {
-      width: 100%;
-      padding: 16px;
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
-      color: white;
-      border: none;
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 16px;
-      letter-spacing: 0.3px;
-      cursor: pointer;
-      transition: opacity 0.18s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    .analyze-btn:hover { opacity: 0.9; }
-    .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* ── LOADING ── */
-    .loading-bar {
-      display: none;
-      padding: 20px;
-      background: var(--surface);
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      text-align: center;
-    }
-    .loading-bar.visible { display: block; }
-    .spinner {
-      width: 32px; height: 32px;
-      border: 3px solid var(--border);
-      border-top-color: var(--blue);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 12px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-bar p { color: var(--muted); font-size: 14px; }
-    .loading-bar .wake-note {
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--gray);
-    }
-
-    /* ── RESULTS ── */
-    #results { display: flex; flex-direction: column; gap: 14px; }
-
-    .result-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      animation: slideIn 0.3s ease;
-    }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .result-header {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-    }
-    .result-dot {
-      width: 12px; height: 12px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .result-header .label {
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 16px;
-      text-transform: capitalize;
-    }
-    .result-header .conf {
-      margin-left: auto;
-      font-size: 13px;
-      color: var(--muted);
-      font-weight: 500;
-    }
-
-    /* ── FOLLOWUP ── */
-    .followup-section {
-      padding: 16px 20px;
-      background: rgba(245,158,11,0.05);
-      border-bottom: 1px solid var(--border);
-    }
-    .followup-section p {
-      margin-bottom: 12px;
-      color: var(--text);
-      font-weight: 500;
-      font-size: 14px;
-    }
-    .followup-options {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .followup-opt {
-      background: var(--surface2);
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      color: var(--text);
-      text-align: left;
-      cursor: pointer;
-      transition: all 0.18s;
-    }
-    .followup-opt:hover {
-      border-color: var(--blue);
-      background: rgba(59,130,246,0.08);
-    }
-    .followup-opt:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    /* ── BIN RESULT ── */
-    .bin-result {
-      display: none;
-      padding: 16px 20px;
-    }
-    .bin-result.visible { display: block; animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    .bin-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 15px;
-      margin-bottom: 10px;
-    }
-    .bin-badge.blue {
-      background: rgba(59,130,246,0.15);
-      color: var(--blue-light);
-      border: 1px solid rgba(59,130,246,0.3);
-    }
-    .bin-badge.green {
-      background: rgba(34,197,94,0.15);
-      color: var(--green-light);
-      border: 1px solid rgba(34,197,94,0.3);
-    }
-    .bin-badge.black {
-      background: rgba(148,163,184,0.15);
-      color: var(--black-bin);
-      border: 1px solid rgba(148,163,184,0.3);
-    }
-    .bin-badge.gray {
-      background: rgba(100,116,139,0.15);
-      color: var(--gray);
-      border: 1px solid rgba(100,116,139,0.3);
-    }
-    .bin-tip {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.6;
-    }
-    .city-contact {
-      display: none;
-      margin-top: 10px;
-      padding: 10px 12px;
-      background: var(--surface2);
-      border-left: 3px solid var(--accent);
-      font-size: 12px;
-      color: var(--text);
-      border-radius: 4px;
-    }
-    .city-contact.visible { display: block; }
-
-    /* ── CAMERA PREVIEW ── */
-    #camera-video {
-      display: none;
-      width: 100%;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: #000;
-    }
-    #camera-video.visible { display: block; }
-    #capture-btn {
-      display: none;
-      width: 100%;
-      padding: 14px;
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 0 0 14px 14px;
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 15px;
-      cursor: pointer;
-      margin-top: -1px;
-    }
-    #capture-btn.visible { display: block; }
-    #capture-canvas { display: none; }
-
-    /* ── ERROR ── */
-    #error-msg {
-      display: none;
-      padding: 14px 18px;
-      background: rgba(239,68,68,0.12);
-      border: 1px solid rgba(239,68,68,0.3);
-      border-radius: 10px;
-      color: #fca5a5;
-      font-size: 13px;
-    }
-    #error-msg.visible { display: block; }
-  </style>
-</head>
-<body>
-
-  <header>
-    <div class="logo-icon">🗑️</div>
-    <div class="logo-text">
-      <h1>TrashSmart</h1>
-      <p>AI-powered waste sorter for your city</p>
-    </div>
-    <div class="badge">YOLOv8</div>
-    <!-- ═══ NEW: Optimized Model Indicator ═══ -->
-    <div class="optimized-badge" style="position: relative;">
-      <span class="icon">⚡</span>
-      <span>Optimized</span>
-      <div class="tooltip">
-        <strong style="display:block; margin-bottom:8px; color:var(--blue-light);">Enhanced Detection Settings</strong>
-        <div class="tooltip-row">
-          <span class="tooltip-label">Confidence:</span>
-          <span class="tooltip-value">0.35</span>
-        </div>
-        <div class="tooltip-row">
-          <span class="tooltip-label">IoU Threshold:</span>
-          <span class="tooltip-value">0.6</span>
-        </div>
-        <div class="tooltip-row">
-          <span class="tooltip-label">Image Size:</span>
-          <span class="tooltip-value">1280px</span>
-        </div>
-        <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:10px; color:var(--muted);">
-          Better accuracy & bounding boxes
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <main>
-    <!-- City Selection -->
-    <div class="city-row">
-      <label>📍 Select your city:</label>
-      <button class="city-btn" onclick="selectCity('livermore')">Livermore</button>
-      <button class="city-btn" onclick="selectCity('oakland')">Oakland</button>
-    </div>
-
-    <!-- Error Message -->
-    <div id="error-msg"></div>
-
-    <!-- Upload Zone -->
-    <div class="upload-zone" id="upload-zone"
-         ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
-      <input type="file" accept="image/*" onchange="loadImageFile(this.files[0])" />
-      <div class="upload-icon">📸</div>
-      <h2>Drop your photo here</h2>
-      <p>or click to browse your files</p>
-      <div class="or-divider">or use camera</div>
-      <button class="camera-btn" onclick="startCamera(event)">
-        📷 Open Camera
-      </button>
-    </div>
-
-    <!-- Camera Preview -->
-    <video id="camera-video" autoplay playsinline></video>
-    <button id="capture-btn" onclick="captureFromCamera()">📸 Capture Photo</button>
-    <canvas id="capture-canvas"></canvas>
-
-    <!-- Canvas Preview + Analyze -->
-    <div class="canvas-wrapper" id="canvas-wrapper">
-      <canvas id="preview-canvas"></canvas>
-      <button class="analyze-btn" id="analyze-btn" onclick="analyzeImage()">
-        <span>🔍</span>
-        <span>Analyze Waste</span>
-      </button>
-    </div>
-
-    <!-- Loading -->
-    <div class="loading-bar" id="loading-bar">
-      <div class="spinner"></div>
-      <p>Analyzing image with optimized detection...</p>
-      <p class="wake-note">First load may take 30s as server wakes up</p>
-    </div>
-
-    <!-- Results -->
-    <div id="results"></div>
-  </main>
-
-<script>
-  // ── CONFIGURATION ───────────────────────────────────
-  const API_URL = window.location.origin;
-  let selectedCity = null;
-  let currentImageBlob = null;
-  let cameraStream = null;
-  let lastDetections = [];
-
-  const BOX_COLORS = {
-    blue: '#3b82f6',
-    green: '#22c55e',
-    black: '#94a3b8',
-    gray: '#64748b',
-    paper: '#f59e0b',
-    plastic: '#3b82f6',
-    wrapper: '#f59e0b'
-  };
-
-  // ── CITY SELECTION ──────────────────────────────────
-  function selectCity(city) {
-    selectedCity = city;
-    document.querySelectorAll('.city-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    hideError();
-  }
-
-  // ── IMAGE UPLOAD & DROP ─────────────────────────────
-  function handleDragOver(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    document.getElementById('upload-zone').classList.add('dragover');
-  }
-
-  function handleDragLeave(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    document.getElementById('upload-zone').classList.remove('dragover');
-  }
-
-  function handleDrop(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    document.getElementById('upload-zone').classList.remove('dragover');
-    const file = event.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) loadImageFile(file);
-  }
-
-  function loadImageFile(file) {
-    currentImageBlob = file;
-    stopCamera();
-    const reader = new FileReader();
-    reader.onload = e => drawImageOnCanvas(e.target.result);
-    reader.readAsDataURL(file);
-  }
-
-  function drawImageOnCanvas(src) {
-    const canvas = document.getElementById('preview-canvas');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-      document.getElementById('canvas-wrapper').classList.add('visible');
-      document.getElementById('results').innerHTML = '';
-      hideError();
-      lastDetections = [];
-    };
-    img.src = src;
-  }
-
-  // ── CAMERA ──────────────────────────────────────
-  async function startCamera(event) {
-    event.stopPropagation();
-    try {
-      cameraStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
-      });
-      const video = document.getElementById('camera-video');
-      video.srcObject = cameraStream;
-      video.classList.add('visible');
-      document.getElementById('capture-btn').classList.add('visible');
-      document.getElementById('canvas-wrapper').classList.remove('visible');
-    } catch (err) {
-      showError('Camera not available. Please upload an image instead.');
-    }
-  }
-
-  function captureFromCamera() {
-    const video = document.getElementById('camera-video');
-    const canvas = document.getElementById('capture-canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    canvas.toBlob(blob => {
-      currentImageBlob = blob;
-      stopCamera();
-      drawImageOnCanvas(canvas.toDataURL('image/jpeg'));
-    }, 'image/jpeg', 0.92);
-  }
-
-  function stopCamera() {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach(t => t.stop());
-      cameraStream = null;
-    }
-    document.getElementById('camera-video').classList.remove('visible');
-    document.getElementById('capture-btn').classList.remove('visible');
-  }
-
-  // ── ANALYSIS ─────────────────────────────────────
-  async function analyzeImage() {
-    if (!selectedCity) {
-      showError('Please select your city first (Livermore or Oakland).');
-      return;
-    }
-    if (!currentImageBlob) {
-      showError('Please upload or capture an image first.');
-      return;
-    }
-
-    showLoading(true);
-    hideError();
-    document.getElementById('results').innerHTML = '';
-    document.getElementById('analyze-btn').disabled = true;
-
-    const formData = new FormData();
-    formData.append('image', currentImageBlob, 'photo.jpg');
-    formData.append('city', selectedCity);
-
-    try {
-      const resp = await fetch(`${API_URL}/predict`, { method: 'POST', body: formData });
-      if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
-      const data = await resp.json();
-      lastDetections = data.detections;
-      renderResults(data.detections);
-      drawBoundingBoxes(data.detections);
-    } catch (err) {
-      showError('Could not reach the analysis server. It may be waking up — please try again in 30 seconds.');
-    } finally {
-      showLoading(false);
-      document.getElementById('analyze-btn').disabled = false;
-    }
-  }
-
-  // ── DRAW BOUNDING BOXES ──────────────────────────
-  function drawBoundingBoxes(detections, resolvedMap = {}) {
-    const canvas = document.getElementById('preview-canvas');
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width;
-    const h = canvas.height;
-
-    // Redraw original image first
-    const img = new Image();
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0);
-      detections.forEach(d => {
-        const resolved = resolvedMap[d.id];
-        let color;
-        if (resolved) {
-          color = BOX_COLORS[resolved.color] || '#fff';
-        } else if (!d.needs_followup && d.result) {
-          color = BOX_COLORS[d.result.color] || '#fff';
-        } else {
-          color = BOX_COLORS[d.label] || '#f59e0b';
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrashSmart - AI Waste Sorting Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        const [x1, y1, x2, y2] = d.bbox;
-        const bx = x1 * w, by = y1 * h;
-        const bw = (x2 - x1) * w, bh = (y2 - y1) * h;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-        // Box
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 3;
-        ctx.strokeRect(bx, by, bw, bh);
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
 
-        // Label background
-        const label = `${d.label} ${d.confidence}%`;
-        ctx.font = 'bold 14px DM Sans, sans-serif';
-        const tw = ctx.measureText(label).width;
-        ctx.fillStyle = color;
-        ctx.fillRect(bx, by - 22, tw + 12, 22);
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
 
-        // Label text
-        ctx.fillStyle = '#000';
-        ctx.fillText(label, bx + 6, by - 6);
-      });
-    };
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
 
-    // Get current canvas image as src
-    img.src = canvas.toDataURL();
-  }
+        .optimized-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 10px;
+            cursor: help;
+            position: relative;
+        }
 
-  // ── RENDER RESULTS ───────────────────────────────
-  const resolvedAnswers = {}; // detectionId -> result
+        .optimized-badge:hover::after {
+            content: "Optimized: conf=0.45, iou=0.6, imgsz=1280";
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2d3748;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            white-space: nowrap;
+            margin-bottom: 5px;
+            z-index: 1000;
+        }
 
-  function renderResults(detections) {
-    const container = document.getElementById('results');
-    container.innerHTML = '';
+        .city-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
 
-    if (!detections || detections.length === 0) {
-      container.innerHTML = `
-        <div style="text-align:center; color:var(--muted); padding:24px;">
-          No waste items detected. Try a clearer photo with better lighting.
-        </div>`;
-      return;
-    }
+        .city-button {
+            padding: 12px 30px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
 
-    detections.forEach(d => {
-      const card = document.createElement('div');
-      card.className = 'result-card';
-      card.id = `card-${d.id}`;
+        .city-button:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
 
-      const dotColor = d.needs_followup
-        ? '#f59e0b'
-        : (d.result ? BOX_COLORS[d.result.color] : '#64748b');
+        .city-button.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
 
-      card.innerHTML = `
-        <div class="result-header">
-          <div class="result-dot" style="background:${dotColor}"></div>
-          <span class="label">${d.label}</span>
-          <span class="conf">${d.confidence}% confident</span>
+        .upload-area {
+            border: 3px dashed #cbd5e0;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f7fafc;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #e6f7ff;
+        }
+
+        #imageInput {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .preview-container {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .image-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+
+        #preview {
+            max-width: 100%;
+            border-radius: 10px;
+            display: block;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .results {
+            margin-top: 30px;
+        }
+
+        .detection-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .detection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .detection-label {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2d3748;
+            text-transform: capitalize;
+        }
+
+        .confidence {
+            background: #edf2f7;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .bin-recommendation {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        .bin-recommendation.green {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .bin-recommendation.blue {
+            background: #bee3f8;
+            color: #1a365d;
+        }
+
+        .bin-recommendation.black {
+            background: #e2e8f0;
+            color: #1a202c;
+        }
+
+        .bin-recommendation.gray {
+            background: #edf2f7;
+            color: #2d3748;
+        }
+
+        .tip {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f7fafc;
+            border-radius: 6px;
+            font-size: 0.9em;
+            color: #4a5568;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #742a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .followup-question {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fef5e7;
+            border-radius: 8px;
+            border-left: 4px solid #f39c12;
+        }
+
+        .followup-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .followup-option {
+            padding: 12px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .followup-option:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .city-selector {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            🗑️ TrashSmart 
+            <span class="optimized-badge">Optimized ⚡</span>
+        </h1>
+        <p class="subtitle">AI-powered waste sorting for Livermore & Oakland</p>
+
+        <div class="city-selector">
+            <button class="city-button" data-city="livermore">Livermore</button>
+            <button class="city-button" data-city="oakland">Oakland</button>
         </div>
-        ${d.needs_followup ? buildFollowup(d) : buildBinResult(d.id, d.result)}
-      `;
-      container.appendChild(card);
-    });
-  }
 
-  function buildFollowup(d) {
-    const opts = d.followup.options.map(opt => `
-      <button class="followup-opt"
-        onclick="resolveFollowup('${d.id}', '${d.label}', '${opt.id}', this)">
-        ${opt.label}
-      </button>`).join('');
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📸</div>
+            <p style="font-size: 1.2em; color: #4a5568; margin-bottom: 10px;">
+                Click or drag image here
+            </p>
+            <p style="color: #718096; font-size: 0.9em;">
+                Take a photo of your waste items
+            </p>
+            <input type="file" id="imageInput" accept="image/*" capture="environment">
+        </div>
 
-    return `
-      <div class="followup-section" id="followup-${d.id}">
-        <p>❓ ${d.followup.question}</p>
-        <div class="followup-options">${opts}</div>
-      </div>
-      <div class="bin-result" id="bin-${d.id}"></div>
-    `;
-  }
+        <div class="preview-container" id="previewContainer">
+            <div class="image-container" id="imageContainer">
+                <img id="preview" />
+                <canvas id="canvas"></canvas>
+            </div>
+        </div>
 
-  function buildBinResult(id, result) {
-    if (!result) return '<div class="bin-result"></div>';
-    return `
-      <div class="bin-result visible" id="bin-${id}">
-        <div class="bin-badge ${result.color}">${result.emoji} ${result.bin}</div>
-        <p class="bin-tip">${result.tip}</p>
-        ${result.bin === 'Other'
-          ? `<div class="city-contact visible">📞 ${result.city_contact}</div>`
-          : ''}
-      </div>`;
-  }
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing image with optimized detection...</p>
+        </div>
 
-  async function resolveFollowup(detectionId, yoloClass, subtype, btn) {
-    // Disable all buttons in this card
-    const card = document.getElementById(`card-${detectionId}`);
-    card.querySelectorAll('.followup-opt').forEach(b => b.disabled = true);
-    btn.style.borderColor = 'var(--blue)';
-    btn.style.color = 'var(--blue-light)';
+        <div class="error" id="error"></div>
 
-    try {
-      const resp = await fetch(`${API_URL}/resolve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ city: selectedCity, yolo_class: yoloClass, subtype })
-      });
-      const result = await resp.json();
-      resolvedAnswers[detectionId] = result;
+        <div class="results" id="results"></div>
+    </div>
 
-      // Show bin result
-      const binDiv = document.getElementById(`bin-${detectionId}`);
-      binDiv.innerHTML = `
-        <div class="bin-badge ${result.color}">${result.emoji} ${result.bin}</div>
-        <p class="bin-tip">${result.tip}</p>
-        ${result.bin === 'Other'
-          ? `<div class="city-contact visible">📞 ${result.city_contact}</div>`
-          : ''}
-      `;
-      binDiv.classList.add('visible');
+    <script>
+        let selectedCity = null;
+        let currentImage = null;
 
-      // Update bounding box color
-      drawBoundingBoxes(lastDetections, resolvedAnswers);
+        // City selection
+        document.querySelectorAll('.city-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.city-button').forEach(b => b.classList.remove('selected'));
+                button.classList.add('selected');
+                selectedCity = button.dataset.city;
+            });
+        });
 
-      // Update dot color in header
-      const dot = card.querySelector('.result-dot');
-      dot.style.background = BOX_COLORS[result.color] || '#fff';
+        // Upload area
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('imageInput');
 
-    } catch (err) {
-      showError('Could not load recommendation. Please try again.');
-    }
-  }
+        uploadArea.addEventListener('click', () => imageInput.click());
 
-  // ── HELPERS ─────────────────────────────────────
-  function showLoading(show) {
-    document.getElementById('loading-bar').classList.toggle('visible', show);
-  }
-  function showError(msg) {
-    const el = document.getElementById('error-msg');
-    el.textContent = msg;
-    el.classList.add('visible');
-  }
-  function hideError() {
-    document.getElementById('error-msg').classList.remove('visible');
-  }
-</script>
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
 
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleImage(file);
+            }
+        });
+
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleImage(file);
+            }
+        });
+
+        function handleImage(file) {
+            if (!selectedCity) {
+                showError('Please select a city first (Livermore or Oakland)');
+                return;
+            }
+
+            currentImage = file;
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                const preview = document.getElementById('preview');
+                preview.src = e.target.result;
+                document.getElementById('previewContainer').style.display = 'block';
+                
+                preview.onload = () => {
+                    analyzeImage(file);
+                };
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        async function analyzeImage(file) {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('results').innerHTML = '';
+
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('city', selectedCity);
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResults(data.detections);
+                    drawBoundingBoxes(data.detections);
+                } else {
+                    showError(data.error || 'Analysis failed');
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+                console.error(error);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function drawBoundingBoxes(detections) {
+            const preview = document.getElementById('preview');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Set canvas size to match image
+            canvas.width = preview.width;
+            canvas.height = preview.height;
+
+            // Clear previous drawings
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Define colors for each class
+            const colorMap = {
+                'biowaste': '#48bb78',
+                'paper': '#ed8936',
+                'plastic': '#4299e1',
+                'metal': '#9f7aea',
+                'glass': '#38b2ac',
+                'wrapper': '#f56565',
+                'thermocol': '#a0aec0',
+                'cloth': '#ed64a6',
+                'footware': '#718096'
+            };
+
+            detections.forEach((detection, index) => {
+                const [x1, y1, x2, y2] = detection.bbox;
+                
+                // Convert normalized coordinates to pixel coordinates
+                const boxX = x1 * canvas.width;
+                const boxY = y1 * canvas.height;
+                const boxWidth = (x2 - x1) * canvas.width;
+                const boxHeight = (y2 - y1) * canvas.height;
+
+                // Get color for this class
+                const color = colorMap[detection.label] || '#667eea';
+
+                // Draw bounding box
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3;
+                ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+
+                // Draw label background
+                const label = `${detection.label} (${detection.confidence}%)`;
+                ctx.font = 'bold 14px Arial';
+                const textWidth = ctx.measureText(label).width;
+                const textHeight = 20;
+
+                ctx.fillStyle = color;
+                ctx.fillRect(boxX, boxY - textHeight - 5, textWidth + 10, textHeight + 5);
+
+                // Draw label text
+                ctx.fillStyle = 'white';
+                ctx.fillText(label, boxX + 5, boxY - 8);
+            });
+        }
+
+        function displayResults(detections) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            if (detections.length === 0) {
+                resultsDiv.innerHTML = '<p style="text-align: center; color: #718096; padding: 20px;">No waste items detected. Try a clearer photo.</p>';
+                return;
+            }
+
+            detections.forEach(detection => {
+                const card = document.createElement('div');
+                card.className = 'detection-card';
+
+                const header = document.createElement('div');
+                header.className = 'detection-header';
+                header.innerHTML = `
+                    <span class="detection-label">${detection.label}</span>
+                    <span class="confidence">${detection.confidence}% confident</span>
+                `;
+                card.appendChild(header);
+
+                if (detection.needs_followup) {
+                    // Show follow-up question
+                    const followupDiv = document.createElement('div');
+                    followupDiv.className = 'followup-question';
+                    followupDiv.innerHTML = `<p style="font-weight: 600; margin-bottom: 10px;">${detection.followup.question}</p>`;
+                    
+                    const optionsDiv = document.createElement('div');
+                    optionsDiv.className = 'followup-options';
+                    
+                    detection.followup.options.forEach(option => {
+                        const optionButton = document.createElement('div');
+                        optionButton.className = 'followup-option';
+                        optionButton.textContent = option.label;
+                        optionButton.onclick = () => resolveFollowup(detection.id, detection.label, option.id, card);
+                        optionsDiv.appendChild(optionButton);
+                    });
+                    
+                    followupDiv.appendChild(optionsDiv);
+                    card.appendChild(followupDiv);
+                } else if (detection.result) {
+                    // Show direct recommendation
+                    displayRecommendation(card, detection.result);
+                }
+
+                resultsDiv.appendChild(card);
+            });
+        }
+
+        async function resolveFollowup(detectionId, yoloClass, subtype, cardElement) {
+            try {
+                const response = await fetch('/resolve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        city: selectedCity,
+                        yolo_class: yoloClass,
+                        subtype: subtype
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Remove followup question and show result
+                    const followupDiv = cardElement.querySelector('.followup-question');
+                    if (followupDiv) {
+                        followupDiv.remove();
+                    }
+                    displayRecommendation(cardElement, result);
+                }
+            } catch (error) {
+                console.error('Error resolving followup:', error);
+            }
+        }
+
+        function displayRecommendation(cardElement, result) {
+            const binDiv = document.createElement('div');
+            binDiv.className = `bin-recommendation ${result.color}`;
+            binDiv.innerHTML = `
+                <span style="font-size: 1.5em;">${result.emoji}</span>
+                <span>${result.bin}</span>
+            `;
+            cardElement.appendChild(binDiv);
+
+            if (result.tip) {
+                const tipDiv = document.createElement('div');
+                tipDiv.className = 'tip';
+                tipDiv.innerHTML = `<strong>💡 Tip:</strong> ${result.tip}`;
+                cardElement.appendChild(tipDiv);
+            }
+
+            if (result.city_contact) {
+                const contactDiv = document.createElement('div');
+                contactDiv.className = 'tip';
+                contactDiv.innerHTML = `<strong>📞 Contact:</strong> ${result.city_contact}`;
+                contactDiv.style.marginTop = '5px';
+                cardElement.appendChild(contactDiv);
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+    </script>
 </body>
 </html>
