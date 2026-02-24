@@ -569,16 +569,28 @@
                 ctx.lineWidth = 3;
                 ctx.strokeRect(x, y, w, h);
 
-                // Draw label
+                // Draw number badge in top-left corner
+                const badgeSize = 28;
+                ctx.fillStyle = color;
+                ctx.fillRect(x, y - badgeSize, badgeSize, badgeSize);
+                
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 18px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(det.number, x + badgeSize/2, y - badgeSize/2);
+
+                // Draw label next to number badge
                 const label = `${det.label} ${det.confidence}%`;
                 ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'left';
                 const textWidth = ctx.measureText(label).width;
 
                 ctx.fillStyle = color;
-                ctx.fillRect(x, y - 28, textWidth + 12, 28);
+                ctx.fillRect(x + badgeSize + 2, y - badgeSize, textWidth + 12, badgeSize);
 
                 ctx.fillStyle = 'white';
-                ctx.fillText(label, x + 6, y - 8);
+                ctx.fillText(label, x + badgeSize + 8, y - badgeSize/2 + 1);
             });
         }
 
@@ -601,10 +613,24 @@
             const card = document.createElement('div');
             card.className = 'detection-card';
 
-            // Header
+            // Header with number badge
             const header = `
                 <div class="detection-header">
-                    <div class="detection-label">${det.label}</div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="
+                            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+                            color: white;
+                            width: 36px;
+                            height: 36px;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-weight: bold;
+                            font-size: 1.2em;
+                        ">${det.number}</div>
+                        <div class="detection-label">${det.label}</div>
+                    </div>
                     <div class="confidence-badge">${det.confidence}% confident</div>
                 </div>
             `;
