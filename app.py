@@ -13,14 +13,14 @@ model = YOLO('best.pt')
 # OPTIMIZED INFERENCE PARAMETERS (Updated for Better Performance)
 # ═════════════════════════════════════════════════════════════════════════════
 # Based on model evaluation recommendations:
-# • Confidence threshold: 0.45 (balanced for quality detections)
+# • Confidence threshold: 0.60 (high confidence for clean results)
 # • IoU threshold: 0.6 (better bounding box accuracy)
 # • Image size: 1280 (improved detection quality)
 # • Max detections: 10 (allow multiple objects per image)
 # ═════════════════════════════════════════════════════════════════════════════
 
 INFERENCE_CONFIG = {
-    'conf': 0.45,      # Confidence threshold - raised to reduce false positives
+    'conf': 0.60,      # Confidence threshold - high confidence for cleaner results
     'iou': 0.6,        # IoU threshold for NMS (removes overlapping boxes)
     'imgsz': 1280,     # Image size for inference (1280 for quality)
     'max_det': 10      # Maximum detections per image
@@ -143,14 +143,14 @@ def predict():
 
     # ═══════════════════════════════════════════════════════════════════
     # OPTIMIZED INFERENCE - Key changes for better detection:
-    # • conf=0.45 (balanced confidence threshold)
+    # • conf=0.60 (high confidence threshold for clean results)
     # • iou=0.6 (better overlap handling)
     # • imgsz=1280 (larger image size for improved accuracy)
     # • max_det=10 (allow detection of up to 10 objects)
     # ═══════════════════════════════════════════════════════════════════
     results = model(
         img, 
-        conf=INFERENCE_CONFIG['conf'],      # 0.45 - Optimized confidence
+        conf=INFERENCE_CONFIG['conf'],      # 0.60 - High confidence
         iou=INFERENCE_CONFIG['iou'],        # 0.6 - Optimized IoU for NMS
         imgsz=INFERENCE_CONFIG['imgsz'],    # 1280 - Larger image size
         max_det=INFERENCE_CONFIG['max_det']  # 10 - Max detections
