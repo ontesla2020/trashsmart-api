@@ -55,7 +55,7 @@
         }
 
         .optimized-badge:hover::after {
-            content: "Optimized: conf=0.45, iou=0.6, imgsz=1280";
+            content: "Optimized: conf=0.60, iou=0.6, imgsz=1280";
             position: absolute;
             bottom: 100%;
             left: 50%;
@@ -343,7 +343,7 @@
     </div>
 
     <script>
-        let selectedCity = null;
+        let selectedCity = 'livermore'; // Default to Livermore
         let currentImage = null;
 
         // City selection
@@ -353,6 +353,11 @@
                 button.classList.add('selected');
                 selectedCity = button.dataset.city;
             });
+        });
+
+        // Set Livermore as default selected
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('[data-city="livermore"]').classList.add('selected');
         });
 
         // Upload area
