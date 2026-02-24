@@ -13,17 +13,17 @@ model = YOLO('best.pt')
 # OPTIMIZED INFERENCE PARAMETERS (Updated for Better Performance)
 # ═════════════════════════════════════════════════════════════════════════════
 # Based on model evaluation recommendations:
-# • Confidence threshold: 0.35 (was 0.6) - better balance of detections
-# • IoU threshold: 0.6 (was 0.5) - better bounding box accuracy
-# • Image size: 1280 (was default 640) - improved detection quality
-# • Max detections: 10 (was 3) - allow more objects per image
+# • Confidence threshold: 0.45 (balanced for quality detections)
+# • IoU threshold: 0.6 (better bounding box accuracy)
+# • Image size: 1280 (improved detection quality)
+# • Max detections: 10 (allow multiple objects per image)
 # ═════════════════════════════════════════════════════════════════════════════
 
 INFERENCE_CONFIG = {
-    'conf': 0.35,      # Confidence threshold (adjustable: 0.3, 0.35, 0.4)
-    'iou': 0.6,        # IoU threshold for NMS (adjustable: 0.5, 0.6, 0.7)
-    'imgsz': 1280,     # Image size for inference (1280 for quality, 640 for speed)
-    'max_det': 10      # Maximum detections per image (FIXED: was 3, now 10)
+    'conf': 0.45,      # Confidence threshold - raised to reduce false positives
+    'iou': 0.6,        # IoU threshold for NMS (removes overlapping boxes)
+    'imgsz': 1280,     # Image size for inference (1280 for quality)
+    'max_det': 10      # Maximum detections per image
 }
 
 # ─────────────────────────────────────────────
@@ -143,17 +143,17 @@ def predict():
 
     # ═══════════════════════════════════════════════════════════════════
     # OPTIMIZED INFERENCE - Key changes for better detection:
-    # • conf=0.35 (was 0.6): Captures more objects, reduces missed items
-    # • iou=0.6 (was 0.5): Better bounding box overlap handling
-    # • imgsz=1280 (was 640): Larger image size for improved accuracy
-    # • max_det=10 (was 3): Allow detection of up to 10 objects
+    # • conf=0.45 (balanced confidence threshold)
+    # • iou=0.6 (better overlap handling)
+    # • imgsz=1280 (larger image size for improved accuracy)
+    # • max_det=10 (allow detection of up to 10 objects)
     # ═══════════════════════════════════════════════════════════════════
     results = model(
         img, 
-        conf=INFERENCE_CONFIG['conf'],      # 0.35 - Optimized confidence
+        conf=INFERENCE_CONFIG['conf'],      # 0.45 - Optimized confidence
         iou=INFERENCE_CONFIG['iou'],        # 0.6 - Optimized IoU for NMS
         imgsz=INFERENCE_CONFIG['imgsz'],    # 1280 - Larger image size
-        max_det=INFERENCE_CONFIG['max_det']  # 10 - Max detections (FIXED!)
+        max_det=INFERENCE_CONFIG['max_det']  # 10 - Max detections
     )
 
     detections = []
@@ -163,10 +163,29 @@ def predict():
             confidence = float(box.conf)
             bbox = box.xyxyn[0].tolist()  # normalized [x1,y1,x2,y2]
 
-            # Filter out detections covering more than 70% of image (likely background)
+            # ════════════════════════════════════════════════════════════════
+            # IMPROVED FILTERING - Remove bad bounding boxes
+            # ════════════════════════════════════════════════════════════════
             x1n, y1n, x2n, y2n = box.xyxyn[0].tolist()
             box_area_ratio = (x2n - x1n) * (y2n - y1n)
+            
+            # Filter 1: Skip boxes covering more than 70% of image (background)
             if box_area_ratio > 0.70:
+                continue
+            
+            # Filter 2: Skip very small boxes (less than 1% of image - likely noise)
+            if box_area_ratio < 0.01:
+                continue
+            
+            # Filter 3: Skip boxes with invalid dimensions
+            box_width = x2n - x1n
+            box_height = y2n - y1n
+            if box_width < 0.02 or box_height < 0.02:  # Less than 2% of image dimension
+                continue
+            
+            # Filter 4: Skip boxes with extreme aspect ratios (likely errors)
+            aspect_ratio = box_width / box_height if box_height > 0 else 0
+            if aspect_ratio < 0.1 or aspect_ratio > 10:  # Too thin or too wide
                 continue
 
             city_class_rules = CITY_RULES[city].get(cls_name, {})
@@ -196,6 +215,10 @@ def predict():
             detections.append(detection)
 
     detections.sort(key=lambda x: x['confidence'], reverse=True)
+    
+    # Debug log
+    print(f"DEBUG: {len(detections)} boxes after filtering, confidences: {[d['confidence'] for d in detections]}, classes: {[d['label'] for d in detections]}")
+    
     return jsonify({'detections': detections, 'city': city})
 
 
