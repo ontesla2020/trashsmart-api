@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TrashSmart</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.3.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.4/dist/teachablemachine-image.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #a8d5ba;
+      padding: 20px;
+      font-size: 20px;
+    }
+    .btn {
+      padding: 14px 30px;
+      font-size: 26px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 12px;
+    }
+    #imageUpload {
+      display: none;
+    }
+    #imagePreview {
+      max-width: 250px;
+      margin-top: 30px;
+      border: 2px solid #388e3c;
+      border-radius: 8px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #output {
+      margin-top: 20px;
+      background-color: #e0f2f1;
+      padding: 20px;
+      border-radius: 10px;
+      display: none;
+      font-size: 24px;
+    }
+    #thankYou {
+      font-size: 24px;
+      color: #2e7d32;
+      margin-top: 20px;
+      font-weight: bold;
+      display: none;
+    }
+    #funFact {
+      margin-top: 15px;
+      font-size: 20px;
+      color: #1b5e20;
+    }
+  </style>
+</head>
+<body>
+  <h2>TrashSmart – Know Before You Throw!</h2>
+  <p>1. Take or upload a picture of trash<br>2. AI tells you which bin to use<br>3. Celebrate smart disposal 🎉</p>
+
+  <label class="btn" for="imageUpload">Choose or Take a Picture</label>
+  <input type="file" id="imageUpload" accept="image/*" capture="environment">
+
+  <img id="imagePreview" src="#" alt="Preview" style="display:none;">
+
+  <div id="output">
+    <div id="instructions"></div>
+    <div id="funFact"></div>
+    <button id="doneBtn" class="btn">Dispose & celebrate</button>
+  </div>
+
+  <div id="thankYou">🎉 City of Livermore thanks you!</div>
+
+  <script>
+    const URL = "https://teachablemachine.withgoogle.com/models/Ze42NTx58/";
+    let model;
+    const logData = ["Timestamp,Prediction,Confidence"];
+
+    const funFacts = [
+      "Recycling one aluminum can saves enough energy to run a TV for 3 hours!",
+      "Composting food scraps helps reduce landfill waste.",
+      "Plastic can take over 400 years to break down.",
+      "Using a reusable bottle saves hundreds of plastic ones each year.",
+      "Sorting your trash helps keep our oceans clean!"
+    ];
+
+    async function loadModel() {
+      model = await tmImage.load(URL + "model.json", URL + "metadata.json");
+    }
+
+    function showFunFact() {
+      const fact = funFacts[Math.floor(Math.random() * funFacts.length)];
+      document.getElementById("funFact").innerText = "🌍 Fun Fact: " + fact;
+    }
+
+    async function predict(img) {
+      const prediction = await model.predict(img);
+      prediction.sort((a, b) => b.probability - a.probability);
+      const top = prediction[0];
+      const type = top.className.toLowerCase().trim();
+      const confidence = (top.probability * 100).toFixed(1);
+
+      const timestamp = new Date().toLocaleString();
+      logData.push(`${timestamp},${top.className},${confidence}%`);
+
+      let message = "";
+      if (type === "hazardous") {
+        message = "⚠️ Hazardous – Please take this to the <strong>Alameda County Household Hazardous Waste collection facility</strong>.";
+      } else if (type === "recycle") {
+        message = "✅ Recyclable – Put in blue bin.";
+      } else if (type === "organic") {
+        message = "🌱 Organic – Put in green bin.";
+      } else if (type === "garbage") {
+        message = "🗑️ Garbage – Put in black bin.";
+      } else {
+        message = "❓ Sorry, could not tell – try another photo.";
+      }
+
+      document.getElementById("instructions").innerHTML = message;
+      document.getElementById("output").style.display = "block";
+      showFunFact();
+    }
+
+    document.getElementById("imageUpload").addEventListener("change", function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = document.getElementById("imagePreview");
+        img.src = e.target.result;
+        img.style.display = "block";
+        img.onload = function() {
+          predict(img);
+        };
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById("doneBtn").addEventListener("click", function() {
+      document.getElementById("thankYou").style.display = "block";
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+    });
+
+    loadModel();
+  </script>
+</body>
+</html>
