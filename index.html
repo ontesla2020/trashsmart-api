@@ -10,9 +10,35 @@
       font-family: sans-serif;
       text-align: center;
       background-color: #a8d5ba;
-      padding: 20px;
+      padding: 0;
+      margin: 0;
       font-size: 20px;
     }
+    
+    /* Navigation Banner */
+    .nav-banner {
+      background: #2ea069;
+      padding: 15px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .nav-banner a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    
+    .nav-banner a:hover {
+      text-decoration: underline;
+    }
+    
+    .content {
+      padding: 20px;
+    }
+    
     .btn {
       padding: 14px 30px;
       font-size: 26px;
@@ -58,21 +84,29 @@
   </style>
 </head>
 <body>
-  <h2>TrashSmart – Know Before You Throw!</h2>
-  <p>1. Take or upload a picture of trash<br>2. AI tells you which bin to use<br>3. Celebrate smart disposal 🎉</p>
-
-  <label class="btn" for="imageUpload">Choose or Take a Picture</label>
-  <input type="file" id="imageUpload" accept="image/*" capture="environment">
-
-  <img id="imagePreview" src="#" alt="Preview" style="display:none;">
-
-  <div id="output">
-    <div id="instructions"></div>
-    <div id="funFact"></div>
-    <button id="doneBtn" class="btn">Dispose & celebrate</button>
+  <!-- Navigation Banner -->
+  <div class="nav-banner">
+    <a href="/new.html">🆕 Try our Advanced YOLOv8 Version with Numbered Detection →</a>
   </div>
+  
+  <!-- Main Content -->
+  <div class="content">
+    <h2>TrashSmart – Know Before You Throw!</h2>
+    <p>1. Take or upload a picture of trash<br>2. AI tells you which bin to use<br>3. Celebrate smart disposal 🎉</p>
 
-  <div id="thankYou">🎉 City of Livermore thanks you!</div>
+    <label class="btn" for="imageUpload">Choose or Take a Picture</label>
+    <input type="file" id="imageUpload" accept="image/*" capture="environment">
+
+    <img id="imagePreview" src="#" alt="Preview" style="display:none;">
+
+    <div id="output">
+      <div id="instructions"></div>
+      <div id="funFact"></div>
+      <button id="doneBtn" class="btn">Dispose & celebrate</button>
+    </div>
+
+    <div id="thankYou">🎉 City of Livermore thanks you!</div>
+  </div>
 
   <script>
     const URL = "https://teachablemachine.withgoogle.com/models/Ze42NTx58/";
@@ -147,9 +181,4 @@
     loadModel();
   </script>
 </body>
-  <div style="background: #2ea069; padding: 15px; text-align: center; margin-bottom: 20px;">
-    <a href="/new.html" style="color: white; text-decoration: none; font-weight: bold; font-size: 18px;">
-        🆕 Try our Advanced YOLOv8 Version with Numbered Detection →
-    </a>
-</div>
 </html>
